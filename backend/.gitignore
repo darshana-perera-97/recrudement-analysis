@@ -14,6 +14,9 @@ pids
 coverage/
 *.lcov
 
+# Data directory for storing user JSON files
+data/
+
 # nyc test coverage
 .nyc_output
 

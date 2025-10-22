@@ -15,10 +15,13 @@ const AddUser = () => {
     retiringDate: '',
     cvFile: null,
     position: '',
+    designation: '',
     department: '',
     experience: '',
     skills: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState('');
 
   const handleChange = (e) => {
     setFormData({
@@ -34,12 +37,78 @@ const AddUser = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically send data to your backend API
-    console.log('User data:', formData);
-    alert('User added successfully!');
-    navigate('/');
+    setIsSubmitting(true);
+    setSubmitMessage('');
+
+    try {
+      // Prepare data for API call (exclude file for now, handle separately if needed)
+      const userData = {
+        name: formData.name,
+        email: formData.email,
+        workingLocation: formData.workingLocation,
+        nic: formData.nic,
+        dob: formData.dob,
+        province: formData.province,
+        address: formData.address,
+        startDate: formData.startDate,
+        retiringDate: formData.retiringDate,
+        position: formData.position,
+        designation: formData.designation,
+        department: formData.department,
+        experience: formData.experience,
+        skills: formData.skills,
+        cvFileName: formData.cvFile ? formData.cvFile.name : null
+      };
+
+      const response = await fetch('http://localhost:5055/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSubmitMessage('User added successfully!');
+        console.log('User data saved:', result);
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          workingLocation: '',
+          nic: '',
+          dob: '',
+          province: '',
+          address: '',
+          startDate: '',
+          retiringDate: '',
+          cvFile: null,
+          position: '',
+          designation: '',
+          department: '',
+          experience: '',
+          skills: ''
+        });
+        
+        // Navigate after a short delay to show success message
+        setTimeout(() => {
+          navigate('/');
+        }, 1500);
+      } else {
+        setSubmitMessage(`Error: ${result.message || 'Failed to save user data'}`);
+        console.error('Error saving user:', result);
+      }
+    } catch (error) {
+      setSubmitMessage(`Error: ${error.message}`);
+      console.error('Network error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -51,6 +120,11 @@ const AddUser = () => {
               <div className="text-center mb-4">
                 <h2 className="fw-light text-dark mb-2">Add New User</h2>
                 <p className="text-muted small">Enter user information below</p>
+                {submitMessage && (
+                  <div className={`alert ${submitMessage.includes('Error') ? 'alert-danger' : 'alert-success'} mt-3`}>
+                    {submitMessage}
+                  </div>
+                )}
               </div>
 
               <form onSubmit={handleSubmit} className="needs-validation" noValidate>
@@ -219,6 +293,22 @@ const AddUser = () => {
                     />
                   </div>
                   <div className="col-md-6 mb-4">
+                    <div className="fw-medium text-dark text-start mb-2">Designation</div>
+                    <input
+                      type="text"
+                      className="form-control form-control-lg border-0 bg-light"
+                      id="designation"
+                      name="designation"
+                      value={formData.designation}
+                      onChange={handleChange}
+                      placeholder="Job designation/level"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-md-6 mb-4">
                     <div className="fw-medium text-dark text-start mb-2">Department</div>
                     <select
                       className="form-select form-select-lg border-0 bg-light"
@@ -236,9 +326,6 @@ const AddUser = () => {
                       <option value="Operations">Operations</option>
                     </select>
                   </div>
-                </div>
-
-                <div className="row">
                   <div className="col-md-6 mb-4">
                     <div className="fw-medium text-dark text-start mb-2">Experience</div>
                     <input
@@ -253,7 +340,10 @@ const AddUser = () => {
                       required
                     />
                   </div>
-                  <div className="col-md-6 mb-4">
+                </div>
+
+                <div className="row">
+                  <div className="col-md-12 mb-4">
                     <div className="fw-medium text-dark text-start mb-2">Skills</div>
                     <input
                       type="text"
@@ -262,7 +352,7 @@ const AddUser = () => {
                       name="skills"
                       value={formData.skills}
                       onChange={handleChange}
-                      placeholder="e.g., JavaScript, React"
+                      placeholder="e.g., JavaScript, React, Node.js"
                     />
                   </div>
                 </div>
@@ -278,8 +368,9 @@ const AddUser = () => {
                   <button 
                     type="submit" 
                     className="btn btn-dark btn-lg px-4"
+                    disabled={isSubmitting}
                   >
-                    Add User
+                    {isSubmitting ? 'Saving...' : 'Add User'}
                   </button>
                 </div>
               </form>

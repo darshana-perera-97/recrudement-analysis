@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getApiUrl } from '../config';
 
 const ViewUser = () => {
   const [users, setUsers] = useState([]);
@@ -56,7 +57,7 @@ const ViewUser = () => {
       setLoading(true);
       setError('');
       
-      const response = await fetch('http://localhost:5055/api/users');
+      const response = await fetch(getApiUrl('api/users'));
       const result = await response.json();
 
       if (response.ok) {

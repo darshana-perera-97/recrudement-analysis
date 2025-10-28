@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config';
 
 const AddUser = () => {
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ const AddUser = () => {
         cvFileName: formData.cvFile ? formData.cvFile.name : null
       };
 
-      const response = await fetch('http://localhost:5055/api/users', {
+      const response = await fetch(getApiUrl('api/users'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -11,15 +11,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Basic route
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Welcome to the Recruitment Analysis API',
-    status: 'success',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0'
-  });
-});
+// Serve static files from the React app build directory
+const frontendBuildPath = path.join(__dirname, '../frontend/build');
+if (fs.existsSync(frontendBuildPath)) {
+  app.use(express.static(frontendBuildPath));
+}
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -140,12 +136,17 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    message: 'Route not found',
-    path: req.originalUrl
-  });
+// Catch-all handler: send back React's index.html file for client-side routing
+app.get('*', (req, res) => {
+  const indexPath = path.join(frontendBuildPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({
+      message: 'Frontend build not found. Please run npm run build in the frontend directory',
+      path: req.originalUrl
+    });
+  }
 });
 
 // Start server
